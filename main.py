@@ -1,38 +1,69 @@
+# Вариант 1
 def knapsack(C, weight, cost, n):
     K = [[0 for x in range(C + 1)] for x in range(n + 1)]
     for i in range(n + 1):
-        for j in range(C + 1):
-            if i == 0 or j == 0:
-                K[i][j] = 0
-            elif weight[i - 1] <= j:
-                K[i][j] = max(cost[i - 1] + K[i - 1][j - weight[i - 1]], K[i - 1][j])
+        for w in range(C + 1):
+            if i == 0 or w == 0:
+                K[i][w] = 0
+            elif weight[i - 1] <= w:
+                K[i][w] = max(cost[i - 1][0] + K[i - 1][w - weight[i - 1]], K[i - 1][w])
             else:
-                K[i][j] = K[i - 1][j]
+                K[i][w] = K[i - 1][w]
     return K
 
 
-items = ['rifle', 'pistol', 'ammo', 'medkit', 'inhaler', 'knife',
-        'axe', 'talisman', 'flask', 'food', 'crossbow']
-values = [25, 15, 15, 20, 5, 15, 20, 25, 15, 20, 20]
-weights = [3, 2, 2, 2, 1, 1, 3, 1, 1, 2, 2]
-capacity = 8
-all_points = sum(values)
-init_points = 25
-count = len(values)
+items = {'в': (3, 25),
+         'п': (2, 15),
+         'б': (2, 15),
+         'а': (2, 20),
+         'и': (1, 5),
+         'н': (1, 15),
+         'т': (3, 20),
+         'о': (1, 25),
+         'ф': (1, 15),
+         'д': (1, 10),
+         'к': (2, 20),
+         'р': (2, 20)
+         }
 
-K = knapsack(capacity, weights, values, count)
+backpack = {}
 
-i, j, total = count, capacity, 0
-res = K[count][capacity]
+Y = []
+X = []
+for key in items:
+    Y.append([items[key][1], key])
+    X.append(items[key][0])
+
+C = 8
+n = len(Y)
+K = knapsack(C, X, Y, n)
+
+w, i, all_weight = C, n, 0
+res = K[n][C]
 while i > 0 and res > 0:
-    if res != K[i - 1][j]:
-        print(items[i - 1], "value", values[i - 1], "points,", weights[i - 1], "cells")
-        total += weights[i - 1]
-        res -= values[i - 1]
-        j -= weights[i - 1]
+    if res != K[i - 1][w]:
+        backpack[Y[i - 1][1]] = [Y[i - 1][0], X[i - 1]]
+        items.pop(Y[i - 1][1])
+        all_weight += X[i - 1]
+        res -= Y[i - 1][0]
+        w -= X[i - 1]
     i -= 1
-print("\nTotal weight:", total, "\b, knapsack value:", K[count][capacity])
-points = K[count][capacity] + init_points - (all_points - K[count][capacity])
-print("Overall value", all_points)
-print("Total value", points)
+
+L = 0
+for key in backpack:
+    for k in range(backpack[key][1]):
+        if L == 2:
+            print("\b\b")
+            L = 0
+        print(key, end=', ')
+        L += 1
+
+start = 15
+s = 0
+for key in items:
+    s += items[key][1]
+
+result = K[n][C] - s + start
+print("Итоговые очки выживания: ", result)
+
 
